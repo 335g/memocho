@@ -1,0 +1,77 @@
+---
+import type { CollectionEntry } from "astro:content";
+
+export interface Props {
+  post: CollectionEntry<"posts">;
+  showDraftBadge?: boolean;
+}
+
+const { post, showDraftBadge = false } = Astro.props;
+const { data } = post;
+
+const formattedDate = data.pubDate.toLocaleDateString("ja-JP", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+});
+---
+
+<article
+  class="group relative flex flex-col rounded-xl border border-border bg-card p-6 transition-all duration-300 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5"
+>
+  <!-- 下書きバッジ -->
+  {
+    showDraftBadge && (
+      <span
+        class="mb-3 inline-flex w-fit items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
+      >
+        下書き
+      </span>
+    )
+  }
+
+  <!-- タイトル -->
+  <h2 class="text-xl font-semibold text-card-foreground leading-snug">
+    <a
+      href={`/posts/${post.id.replace(/\.md$/, "")}`}
+      class="no-underline transition-colors hover:text-primary"
+    >
+      <span class="absolute inset-0" aria-hidden="true"></span>
+      {data.title}
+    </a>
+  </h2>
+
+  <!-- 説明文 -->
+  <p class="mt-2 flex-1 text-muted-foreground line-clamp-3">
+    {data.description}
+  </p>
+
+  <!-- メタ情報: 日付 + タグ -->
+  <div class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+    <time
+      datetime={data.pubDate.toISOString()}
+      class="text-sm text-muted-foreground"
+    >
+      {formattedDate}
+    </time>
+
+    {
+      data.tags.length > 0 && (
+        <ul class="flex flex-wrap gap-1.5" aria-label="タグ">
+          {
+            data.tags.map((tag) => (
+              <li>
+                <a
+                  href={`/tags/${tag}`}
+                  class="relative z-10 inline-block rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground no-underline transition-colors hover:bg-primary/10 hover:text-primary"
+                >
+                  #{tag}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      )
+    }
+  </div>
+</article>

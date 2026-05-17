@@ -1,0 +1,147 @@
+---
+// ThemeToggle: ダークモード切替ボタン
+// light / dark / system の3モードを循環
+// localStorage に保存し、FOUC防止スクリプトと連携
+// 複数配置可能（デスクトップ＋モバイル）
+---
+<button
+  type="button"
+  class="theme-toggle-btn flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+  aria-label="テーマを切り替え"
+  title="テーマを切り替える"
+>
+  <!-- 太陽アイコン（現在ライトモード / system でライト時） -->
+  <svg
+    class="theme-icon theme-icon-light"
+    xmlns="http://www.w3.org/2000/svg"
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <circle cx="12" cy="12" r="5" />
+    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+  </svg>
+
+  <!-- 月アイコン（現在ダークモード / system でダーク時） -->
+  <svg
+    class="theme-icon theme-icon-dark hidden"
+    xmlns="http://www.w3.org/2000/svg"
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+  </svg>
+</button>
+
+<script>
+  const STORAGE_KEY = "theme";
+  const DARK_CLASS = "dark";
+
+  type Theme = "light" | "dark" | "system";
+
+  function getStoredTheme(): Theme {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored === "light" || stored === "dark") return stored;
+    return "system";
+  }
+
+  function getResolvedTheme(): "light" | "dark" {
+    const theme = getStoredTheme();
+    if (theme === "system") {
+      return window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
+    }
+    return theme;
+  }
+
+  function applyTheme(theme: Theme): void {
+    if (theme === "system") {
+      localStorage.removeItem(STORAGE_KEY);
+    } else {
+      localStorage.setItem(STORAGE_KEY, theme);
+    }
+
+    const resolved = theme === "system"
+      ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+      : theme;
+
+    if (resolved === "dark") {
+      document.documentElement.classList.add(DARK_CLASS);
+    } else {
+      document.documentElement.classList.remove(DARK_CLASS);
+    }
+
+    updateAllIcons(resolved);
+  }
+
+  function updateIcon(btn: Element, resolved: "light" | "dark"): void {
+    const lightIcon = btn.querySelector(".theme-icon-light");
+    const darkIcon = btn.querySelector(".theme-icon-dark");
+    if (!lightIcon || !darkIcon) return;
+
+    if (resolved === "dark") {
+      lightIcon.classList.add("hidden");
+      darkIcon.classList.remove("hidden");
+    } else {
+      darkIcon.classList.add("hidden");
+      lightIcon.classList.remove("hidden");
+    }
+  }
+
+  function updateAllIcons(resolved: "light" | "dark"): void {
+    document.querySelectorAll(".theme-toggle-btn").forEach((btn) => {
+      updateIcon(btn, resolved);
+    });
+  }
+
+  function nextTheme(): Theme {
+    const current = getStoredTheme();
+    if (current === "light") return "dark";
+    if (current === "dark") return "system";
+    return "light";
+  }
+
+  function setupThemeToggle(): void {
+    const resolved = getResolvedTheme();
+    updateAllIcons(resolved);
+
+    document.querySelectorAll(".theme-toggle-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const next = nextTheme();
+        applyTheme(next);
+      });
+    });
+  }
+
+  function watchSystemPreference(): void {
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    mq.addEventListener("change", () => {
+      if (getStoredTheme() === "system") {
+        const resolved = mq.matches ? "dark" : "light";
+        if (resolved === "dark") {
+          document.documentElement.classList.add(DARK_CLASS);
+        } else {
+          document.documentElement.classList.remove(DARK_CLASS);
+        }
+        updateAllIcons(resolved);
+      }
+    });
+  }
+
+  setupThemeToggle();
+  watchSystemPreference();
+</script>

@@ -1,0 +1,24 @@
+# Cloudflare Pages 用 HTTP ヘッダー設定
+# public/ に置くことでビルド時に dist/ へコピーされる
+
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+# 静的アセットは長めのキャッシュ（ファイル名がコンテンツハッシュで一意）
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# OGP 画像（変更頻度は低い）
+/og/*
+  Cache-Control: public, max-age=604800
+
+# Pagefind アセット
+/pagefind/*
+  Cache-Control: public, max-age=86400
+
+# HTML ページ（適度にキャッシュ、CDN 経由で即時反映させる場合は短めに）
+/*.html
+  Cache-Control: public, max-age=3600

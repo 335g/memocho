@@ -1,0 +1,168 @@
+/* ===== Markdown 本文スタイル (Prose) =====
+ * 日本語文書の可読性を最優先に調整したミニマルな prose スタイル。
+ * ライト/ダークモード両対応。
+ */
+
+.prose {
+  @apply text-foreground;
+  /* 日本語に最適な行送り（1文字あたり約12ptで行長35-40字想定） */
+  line-height: 1.9;
+  word-break: auto-phrase;
+  overflow-wrap: break-word;
+
+  /* ── 見出し ── */
+  & h1, & h2, & h3, & h4, & h5, & h6 {
+    @apply font-bold text-foreground;
+    scroll-margin-top: 5rem;
+    line-height: 1.4;
+  }
+
+  & h1 {
+    @apply text-3xl mt-12 mb-6 tracking-tight;
+  }
+  & h2 {
+    @apply text-2xl mt-12 mb-4 pb-2 border-b border-border;
+  }
+  & h3 {
+    @apply text-xl mt-10 mb-3;
+  }
+  & h4 {
+    @apply text-lg mt-8 mb-2;
+  }
+  & h5, & h6 {
+    @apply text-base mt-6 mb-2;
+  }
+
+  /* 見出しホバー時のアンカーリンク表示 */
+  & h2, & h3, & h4 {
+    & .heading-anchor {
+      @apply ml-2 text-muted-foreground no-underline opacity-0 transition-opacity duration-200;
+      font-size: 0.85em;
+      &::after {
+        content: "#";
+      }
+    }
+    &:hover .heading-anchor,
+    &:focus-within .heading-anchor {
+      @apply opacity-100;
+    }
+  }
+
+  /* ── 段落 ── */
+  & p {
+    @apply my-5;
+    &:first-child {
+      @apply mt-0;
+    }
+  }
+
+  /* ── リンク ── */
+  & a {
+    @apply text-primary underline underline-offset-2 decoration-primary/30 transition-all duration-200;
+    &:hover {
+      @apply decoration-primary;
+    }
+  }
+
+  /* ── 強調 ── */
+  & strong {
+    @apply font-bold text-foreground;
+  }
+
+  /* ── リスト ── */
+  & ul, & ol {
+    @apply my-5 pl-6;
+  }
+  & ul {
+    list-style-type: disc;
+  }
+  & ol {
+    list-style-type: decimal;
+  }
+  & li {
+    @apply my-1.5;
+    line-height: 1.9;
+  }
+  & li > ul, & li > ol {
+    @apply my-1;
+  }
+
+  /* ── 引用 ── */
+  & blockquote {
+    @apply my-6 border-l-4 border-primary/30 bg-muted/50 py-3 pl-5 pr-4 text-muted-foreground rounded-r-lg;
+    & p {
+      @apply my-1;
+    }
+  }
+
+  /* ── 水平線 ── */
+  & hr {
+    @apply my-10 border-border;
+  }
+
+  /* ── インラインコード ── */
+  & :not(pre) > code {
+    @apply rounded bg-muted px-1.5 py-0.5 text-[0.9em] text-primary font-mono font-medium;
+    &::before, &::after {
+      content: "";
+    }
+  }
+
+  /* ── コードブロック ── */
+  & pre {
+    @apply my-6 overflow-x-auto rounded-lg border border-border bg-muted p-5;
+    & code {
+      @apply bg-transparent p-0 text-sm leading-relaxed;
+      font-family: var(--font-mono);
+    }
+  }
+
+  /* Shiki コードブロックのカラー変数 */
+  & pre.astro-code {
+    @apply bg-muted;
+    & code {
+      color: var(--shiki-light);
+    }
+    & span {
+      color: var(--shiki-light);
+    }
+  }
+
+  /* ダークモード時のコードブロック（クラスベース） */
+  .dark & pre.astro-code {
+    & code, & span {
+      color: var(--shiki-dark) !important;
+    }
+  }
+
+  /* ダークモード時のコードブロック（system モード / OS設定用） */
+  @media (prefers-color-scheme: dark) {
+    & pre.astro-code {
+      & code, & span {
+        color: var(--shiki-dark) !important;
+      }
+    }
+  }
+
+  /* ── 画像 ── */
+  & img {
+    @apply my-8 max-w-full h-auto rounded-lg;
+  }
+
+  /* ── テーブル ── */
+  & table {
+    @apply my-6 w-full border-collapse text-sm;
+  }
+  & thead {
+    @apply border-b-2 border-border;
+  }
+  & th {
+    @apply px-4 py-3 text-left font-semibold;
+  }
+  & td {
+    @apply border-b border-border px-4 py-3;
+  }
+  & tbody tr:hover {
+    @apply bg-muted/50;
+  }
+}

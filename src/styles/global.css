@@ -1,0 +1,75 @@
+@import "tailwindcss";
+@import "./prose.css";
+
+/* ===== ダークモードバリアント ===== */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ===== デザイントークン ===== */
+@theme {
+  /* 和文フォントスタック — 視認性重視 */
+  --font-sans: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Noto Sans JP",
+    Meiryo, YuGothic, "Yu Gothic", system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* 等幅フォント — コード・数値用 */
+  --font-mono: "Source Han Code JP", "Ricty Diminished", "BIZ UDGothic",
+    "JetBrains Mono", "Fira Code", Menlo, Monaco, "Cascadia Code", Consolas,
+    monospace;
+
+  /* ── ライトテーマ ── */
+  --color-background: #fafbfc;          /* わずかに温かみのある白 */
+  --color-foreground: #1a1f36;          /* slate-900 相当、読みやすさ優先 */
+  --color-border: #e4e7ec;              /* やわらかい灰 */
+  --color-primary: #4f46e5;             /* indigo 寄りの青 */
+  --color-primary-foreground: #ffffff;
+  --color-muted: #f1f3f5;               /* 背景用グレー */
+  --color-muted-foreground: #5b6877;    /* 補足テキスト */
+  --color-accent: #f1f3f5;              /* hover 時の背景 */
+  --color-accent-foreground: #1a1f36;
+  --color-card: #ffffff;
+  --color-card-foreground: #1a1f36;
+  --color-ring: #6366f1;                /* indigo-500 */
+}
+
+/* ── ダークテーマ ── */
+.dark {
+  --color-background: #0b1120;          /* 深い紺 */
+  --color-foreground: #e4e9f2;
+  --color-border: #2d3748;
+  --color-primary: #818cf8;             /* indigo-400 */
+  --color-primary-foreground: #0b1120;
+  --color-muted: #1a2332;
+  --color-muted-foreground: #8896a7;
+  --color-accent: #1a2332;
+  --color-accent-foreground: #e4e9f2;
+  --color-card: #111b2a;
+  --color-card-foreground: #e4e9f2;
+  --color-ring: #818cf8;
+}
+
+/* ===== ベーススタイル ===== */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+    /* 日本語に最適な行送り */
+    line-height: 1.8;
+  }
+
+  /* ── フォーカスリング ── */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring rounded-sm;
+  }
+
+  /* ── すべてのインタラクティブ要素に統一トランジション ── */
+  a, button, input, select, textarea {
+    transition-property: color, background-color, border-color, box-shadow, opacity;
+    transition-duration: 200ms;
+    transition-timing-function: ease;
+  }
+}

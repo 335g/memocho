@@ -1,0 +1,313 @@
+---
+import Base from "../layouts/Base.astro";
+---
+
+<Base
+  title="検索"
+  description="memocho の記事を全文検索"
+  path="/search"
+>
+  <div class="mx-auto max-w-3xl px-4 sm:px-6 py-8 sm:py-12">
+    <!-- ヘッダー -->
+    <header class="mb-10">
+      <h1 class="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
+        検索
+      </h1>
+      <p class="mt-3 text-lg text-muted-foreground">
+        記事をキーワードで検索できます
+      </p>
+    </header>
+
+    <!-- 検索入力 -->
+    <div class="relative mb-8">
+      <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="text-muted-foreground"
+          aria-hidden="true"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.3-4.3" />
+        </svg>
+      </div>
+      <input
+        id="search-input"
+        type="search"
+        placeholder="キーワードを入力..."
+        autocomplete="off"
+        class="w-full rounded-xl border border-border bg-card py-3 pl-12 pr-4 text-base text-card-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/30"
+        aria-label="検索キーワード"
+      />
+    </div>
+
+    <!-- ローディング -->
+    <div id="search-loading" class="hidden py-8 text-center">
+      <div class="inline-flex items-center gap-2 text-muted-foreground">
+        <svg
+          class="animate-spin"
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+        </svg>
+        <span>検索中...</span>
+      </div>
+    </div>
+
+    <!-- 初期状態: 検索待ち -->
+    <div id="search-initial" class="flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-16 text-center">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="48"
+        height="48"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="mb-4 text-muted-foreground"
+        aria-hidden="true"
+      >
+        <circle cx="11" cy="11" r="8" />
+        <path d="m21 21-4.3-4.3" />
+      </svg>
+      <p class="text-lg font-medium text-muted-foreground">
+        キーワードを入力して検索
+      </p>
+      <p class="mt-1 text-sm text-muted-foreground">
+        記事のタイトルと本文から検索します
+      </p>
+    </div>
+
+    <!-- 検索結果 -->
+    <div id="search-results" class="hidden">
+      <p id="search-stats" class="mb-6 text-sm text-muted-foreground"></p>
+      <ul id="search-result-list" class="space-y-6"></ul>
+    </div>
+
+    <!-- 結果なし -->
+    <div id="search-empty" class="hidden flex-col items-center justify-center rounded-lg border border-dashed border-border py-16 text-center">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="48"
+        height="48"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="mb-4 text-muted-foreground"
+        aria-hidden="true"
+      >
+        <circle cx="11" cy="11" r="8" />
+        <path d="m21 21-4.3-4.3" />
+        <path d="M8 8h6M8 12h4" />
+      </svg>
+      <p class="text-lg font-medium text-muted-foreground">
+        該当する記事が見つかりませんでした
+      </p>
+      <p class="mt-1 text-sm text-muted-foreground">
+        別のキーワードでお試しください
+      </p>
+    </div>
+
+    <!-- エラー -->
+    <div id="search-error" class="hidden flex-col items-center justify-center rounded-lg border border-dashed border-border py-16 text-center">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="48"
+        height="48"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="mb-4 text-muted-foreground"
+        aria-hidden="true"
+      >
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" x2="12" y1="8" y2="12" />
+        <line x1="12" x2="12.01" y1="16" y2="16" />
+      </svg>
+      <p class="text-lg font-medium text-muted-foreground">
+        検索機能を読み込めませんでした
+      </p>
+      <p class="mt-1 text-sm text-muted-foreground">
+        本番ビルド後に利用可能になります（<code>npm run build && npm run preview</code>）
+      </p>
+    </div>
+  </div>
+</Base>
+
+<script>
+  interface PagefindResult {
+    url: string;
+    excerpt: string;
+    meta: Record<string, string>;
+    raw_url?: string;
+  }
+
+  interface PagefindSearchResponse {
+    results: Array<{
+      id: string;
+      data: () => Promise<PagefindResult>;
+    }>;
+  }
+
+  let pagefindMod: any = null;
+  let initPromise: Promise<void> | null = null;
+
+  async function initPagefind() {
+    if (initPromise) return initPromise;
+    initPromise = (async () => {
+      try {
+        pagefindMod = await import(/* @vite-ignore */ "/pagefind/pagefind.js");
+        if (pagefindMod.init) {
+          await pagefindMod.init();
+        }
+      } catch {
+        pagefindMod = null;
+        throw new Error("Pagefind が利用できません");
+      }
+    })();
+    return initPromise;
+  }
+
+  // DOM elements
+  const input = document.getElementById("search-input") as HTMLInputElement;
+  const loadingEl = document.getElementById("search-loading")!;
+  const initialEl = document.getElementById("search-initial")!;
+  const resultsEl = document.getElementById("search-results")!;
+  const resultList = document.getElementById("search-result-list")!;
+  const statsEl = document.getElementById("search-stats")!;
+  const emptyEl = document.getElementById("search-empty")!;
+  const errorEl = document.getElementById("search-error")!;
+
+  function showOnly(el: HTMLElement) {
+    [loadingEl, initialEl, resultsEl, emptyEl, errorEl].forEach((e) => {
+      e.classList.toggle("hidden", e !== el);
+      if (e === resultsEl) {
+        e.classList.toggle("hidden", el !== resultsEl);
+      } else if (e === el) {
+        e.classList.remove("hidden");
+        // For flex containers
+        if (e.classList.contains("flex-col")) {
+          e.classList.add("flex");
+        }
+      } else {
+        e.classList.add("hidden");
+      }
+    });
+    // Handle flex containers properly
+    resultsEl.classList.toggle("hidden", el !== resultsEl);
+  }
+
+  let debounceTimer: ReturnType<typeof setTimeout>;
+
+  input.addEventListener("input", () => {
+    const query = input.value.trim();
+    clearTimeout(debounceTimer);
+
+    if (!query) {
+      showOnly(initialEl);
+      return;
+    }
+
+    showOnly(loadingEl);
+
+    debounceTimer = setTimeout(async () => {
+      try {
+        await initPagefind();
+        if (!pagefindMod) {
+          showOnly(errorEl);
+          return;
+        }
+
+        const search: PagefindSearchResponse = await pagefindMod.search(query);
+
+        if (!search.results || search.results.length === 0) {
+          showOnly(emptyEl);
+          return;
+        }
+
+        // Fetch data for all results (up to 10)
+        const results = await Promise.all(
+          search.results.slice(0, 10).map((r) => r.data()),
+        );
+
+        statsEl.textContent = `${search.results.length} 件の結果`;
+
+        resultList.innerHTML = results
+          .map(
+            (r: PagefindResult) => `
+            <li>
+              <article class="rounded-xl border border-border bg-card p-6 transition-all duration-300 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5">
+                <h2 class="text-xl font-semibold text-card-foreground leading-snug">
+                  <a
+                    href="${r.url}"
+                    class="no-underline transition-colors hover:text-primary"
+                  >
+                    ${r.meta?.title || r.url}
+                  </a>
+                </h2>
+
+                ${
+                  r.meta?.date
+                    ? `<p class="mt-1.5 text-sm text-muted-foreground">${r.meta.date}</p>`
+                    : ""
+                }
+
+                <p class="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  ${r.excerpt}
+                </p>
+
+                ${
+                  r.meta?.tags
+                    ? `<div class="mt-3 flex flex-wrap gap-1.5">
+                        ${r.meta.tags
+                          .split(/[,\s]+/)
+                          .filter(Boolean)
+                          .map(
+                            (tag: string) =>
+                              `<span class="inline-block rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">${tag.startsWith("#") ? tag : "#" + tag}</span>`,
+                          )
+                          .join("")}
+                      </div>`
+                    : ""
+                }
+              </article>
+            </li>
+          `,
+          )
+          .join("");
+
+        showOnly(resultsEl);
+      } catch (err) {
+        console.error("Search error:", err);
+        showOnly(errorEl);
+      }
+    }, 300);
+  });
+
+  // 初期ロード時に Pagefind をプリロード
+  initPagefind().catch(() => {});
+</script>

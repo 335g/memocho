@@ -1,0 +1,31 @@
+{
+  "name": "memocho",
+  "type": "module",
+  "version": "0.0.1",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "postbuild": "npx pagefind --site dist --glob \"posts/**/*.html\"",
+    "check": "astro check",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.9.4",
+    "@astrojs/sitemap": "^3.7.2",
+    "@fontsource/noto-sans-jp": "^5.2.9",
+    "@resvg/resvg-js": "^2.6.2",
+    "astro": "^5.7.12",
+    "gray-matter": "^4.0.3",
+    "satori": "^0.26.0",
+    "typescript": "^5.8.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.6",
+    "pagefind": "^1.5.2",
+    "tailwindcss": "^4.1.6"
+  }
+}

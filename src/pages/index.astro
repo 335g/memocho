@@ -1,0 +1,113 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../layouts/Base.astro";
+import PostCard from "../components/PostCard.astro";
+import Pagination from "../components/Pagination.astro";
+import { paginate } from "../utils/pagination";
+import { SITE } from "../site.config";
+
+const isDev = import.meta.env.DEV;
+
+const allPosts = await getCollection("posts");
+
+// 本番ビルドでは下書きを除外、開発時はすべて表示
+const posts = isDev
+  ? allPosts
+  : allPosts.filter((post) => !post.data.draft);
+
+// 公開日の降順でソート
+posts.sort(
+  (a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime()
+);
+
+// ページ 1 のデータ
+const pageData = paginate(posts, 1);
+
+const draftCount = isDev
+  ? allPosts.filter((p) => p.data.draft).length
+  : 0;
+
+// 構造化データ: Blog
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Blog",
+  name: SITE.name,
+  description: SITE.description,
+  url: SITE.url,
+  blogPost: posts.slice(0, 10).map((post) => ({
+    "@type": "BlogPosting",
+    headline: post.data.title,
+    description: post.data.description,
+    datePublished: post.data.pubDate.toISOString(),
+    url: new URL(`/posts/${post.id.replace(/\.md$/, "")}`, SITE.url).href,
+  })),
+};
+---
+
+<Base
+  title="ホーム"
+  description="memocho - 技術メモと日々の学びを綴るブログ"
+  path="/"
+  ogImage="/og/default.png"
+  jsonLd={jsonLd}
+  footerNotice={isDev && draftCount > 0 ? `🟡 開発モード: 下書き記事 ${draftCount} 件を含む全 ${allPosts.length} 件を表示中` : undefined}
+>
+  <div class="mx-auto max-w-5xl px-4 sm:px-6 py-8 sm:py-12 lg:py-16">
+    <!-- 投稿一覧 -->
+    {
+      pageData.items.length === 0 ? (
+        <!-- 空状態 -->
+        <div class="flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-16 text-center">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="48"
+            height="48"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="mb-4 text-muted-foreground"
+            aria-hidden="true"
+          >
+            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" x2="8" y1="13" y2="13" />
+            <line x1="16" x2="8" y1="17" y2="17" />
+            <line x1="10" x2="8" y1="9" y2="9" />
+          </svg>
+          <p class="text-lg font-medium text-muted-foreground">
+            まだ投稿がありません
+          </p>
+          <p class="mt-1 text-sm text-muted-foreground">
+            最初の記事が公開されるまでお待ちください。
+          </p>
+        </div>
+      ) : (
+        <>
+          <!-- 記事グリッド -->
+          <ul class="grid gap-6 sm:grid-cols-2">
+            {
+              pageData.items.map((post) => (
+                <li>
+                  <PostCard
+                    post={post}
+                    showDraftBadge={isDev && post.data.draft}
+                  />
+                </li>
+              ))
+            }
+          </ul>
+
+          <!-- ページネーション -->
+          <Pagination
+            currentPage={pageData.currentPage}
+            totalPages={pageData.totalPages}
+            pageBasePath="/page"
+          />
+        </>
+      )
+    }
+  </div>
+</Base>
