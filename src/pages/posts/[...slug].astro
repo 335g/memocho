@@ -2,6 +2,7 @@
 import { type CollectionEntry, getCollection } from "astro:content";
 import Base from "../../layouts/Base.astro";
 import { SITE } from "../../site.config";
+import { getReadingTime } from "../../utils/readingTime";
 
 export async function getStaticPaths() {
   const posts = await getCollection("posts");
@@ -33,6 +34,7 @@ const updatedDateFormatted = data.updatedDate
   : null;
 
 const description = data.description.slice(0, 160);
+const readingTime = getReadingTime(post.body);
 
 // スラッグ
 const slug = post.id.replace(/\.md$/, "");
@@ -86,6 +88,26 @@ const jsonLd = {
 
       <!-- 日付とタグ -->
       <div class="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-border pb-6">
+        <!-- 読了時間 -->
+        <div class="flex items-center gap-1.5 text-sm text-muted-foreground">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+          <span>{readingTime} 分で読める</span>
+        </div>
+
         <!-- 公開日 -->
         <div class="flex items-center gap-1.5 text-sm text-muted-foreground">
           <svg

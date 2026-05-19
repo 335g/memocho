@@ -3,6 +3,7 @@ title: "Astroでブログを始める"
 description: "Astroフレームワークを使って静的サイトブログを構築する方法を紹介します。"
 pubDate: 2026-05-10
 tags: ["astro", "web", "tutorial"]
+draft: true
 ---
 
 ## Astro とは？

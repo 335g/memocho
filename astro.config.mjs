@@ -16,6 +16,7 @@ export default defineConfig({
   outDir: "dist",
 
   markdown: {
+    allowHtml: true,
     syntaxHighlight: "shiki",
     shikiConfig: {
       themes: {
