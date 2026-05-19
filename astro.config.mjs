@@ -5,12 +5,15 @@ import tailwindcss from "@tailwindcss/vite";
 import sitemap from "@astrojs/sitemap";
 import ogImageIntegration from "./src/integrations/og-image";
 
+import cloudflare from "@astrojs/cloudflare";
+
 // https://astro.build/config
 export default defineConfig({
   integrations: [
     sitemap(),
     ogImageIntegration(),
   ],
+
   site: "https://335g.dev",
   output: "static",
   outDir: "dist",
@@ -36,4 +39,6 @@ export default defineConfig({
       },
     },
   },
+
+  adapter: cloudflare()
 });

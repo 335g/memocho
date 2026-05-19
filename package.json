@@ -10,11 +10,14 @@
     "build": "astro build",
     "postbuild": "npx pagefind --site dist --glob \"posts/**/*.html\"",
     "check": "astro check",
-    "preview": "astro preview",
-    "astro": "astro"
+    "preview": "npm run build && wrangler dev",
+    "astro": "astro",
+    "deploy": "npm run build && wrangler deploy",
+    "cf-typegen": "wrangler types"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
+    "@astrojs/cloudflare": "12",
     "@astrojs/sitemap": "^3.7.2",
     "@fontsource/noto-sans-jp": "^5.2.9",
     "@resvg/resvg-js": "^2.6.2",
@@ -26,6 +29,7 @@
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.6",
     "pagefind": "^1.5.2",
-    "tailwindcss": "^4.1.6"
+    "tailwindcss": "^4.1.6",
+    "wrangler": "^4.93.0"
   }
 }
